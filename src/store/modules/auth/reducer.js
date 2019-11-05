@@ -4,6 +4,7 @@ const INITIAL_STATE = {
   token: null,
   signed: false,
   loading: false,
+  offline: false,
   telefone: "",
   codigo: "",
 };
@@ -35,6 +36,14 @@ export default function auth(state = INITIAL_STATE, action) {
         draft.signed = false;
         draft.telefone = "";
         draft.codigo = "";
+        break;
+      }
+      case "@auth/OFFLINE": {
+        draft.offline = true;
+        break;
+      }
+      case "@auth/ONLINE": {
+        draft.offline = false;
         break;
       }
       default:

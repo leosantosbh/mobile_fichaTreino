@@ -61,7 +61,7 @@ function Dashboard({ navigation, isFocused }) {
 
   useEffect(() => {
     loadUser();
-  }, [isFocused]);
+  }, []);
 
   return (
     <Background>

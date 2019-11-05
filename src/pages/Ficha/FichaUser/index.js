@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TouchableOpacity } from 'react-native';
 import { withNavigationFocus } from 'react-navigation';
 import Background from "~/components/Background";
 import api from '~/services/api';
+import getRealm from '~/services/realm'
 
 import {
   Container,
@@ -22,18 +22,54 @@ import {
 function FichaUser({ navigation, isFocused }) {
 
   const [fichas, setFichas] = useState([]);
+  const [off, setOff] = useState(false)
 
   async function loadfichas() {
     const response = await api.get('fichas');
     setFichas(response.data);
   };
 
+  async function loadfichaslocal() {
+    const realm = await getRealm();
+
+    const data = realm.objects('Ficha').sorted('id', true)
+
+    setFichas(data)
+  };
+
   useEffect(() => {
-    loadfichas()
+    loadfichaslocal()
+    setOff(true)
   },[isFocused])
 
-  function handleNovaFicha() {
-    Alert.alert('Alerta!', 'Funcionalidade ainda não habilitada');
+  async function saveFichas(ficha) {
+
+    const data = {
+      id: ficha.id,
+      user_id: ficha.users.id,
+      nome: ficha.nome,
+      descricao: ficha.descricao
+    }
+    const realm = await getRealm()
+
+    realm.write(() => {
+      realm.create('Ficha', data)
+    })
+  }
+
+  async function handleFichasOffline() {
+
+    const realm = await getRealm()
+
+    realm.write(() => {
+      realm.deleteAll()
+    })
+
+    const response = await api.get('fichas');
+
+    response.data.map(date => {
+      saveFichas(date)
+    })
   }
 
   return (
@@ -47,17 +83,17 @@ function FichaUser({ navigation, isFocused }) {
               <Top onPress={() => {
                 navigation.navigate('ExecUser', { ficha });
               }}>
-                <AvatarFicha source={{uri: ficha.users.avatars ? ficha.users.avatars.caminho : `https://api.adorable.io/avatar/50/${ficha.nome}.png`}} />
+                <AvatarFicha source={off ? {uri: `https://api.adorable.io/avatar/50/Teste.png`}: {uri: ficha.users.avatars ? ficha.users.avatars.caminho : `https://api.adorable.io/avatar/50/${ficha.nome}.png`}} />
                 <Mid>
                   <Nome>{ficha.nome}</Nome>
                   <Descricao>{ficha.descricao}</Descricao>
                 </Mid>
               </Top>
               <Down>
-                <TouchableOpacity onPress={handleNovaFicha}>
+                <TouchableOpacity onPress={() => {}}>
                   <Icon name="edit" size={35} color="#62c5cc" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleNovaFicha}>
+                <TouchableOpacity onPress={() => {}}>
                   <Icon name="delete" size={35} color="#cf5959" />
                 </TouchableOpacity>
               </Down>
@@ -66,8 +102,8 @@ function FichaUser({ navigation, isFocused }) {
 
         />
       </Container>
-      <AddFicha onPress={handleNovaFicha}>
-        <Icon name="add" size={44} color="rgb(255,255,255)" />
+      <AddFicha onPress={handleFichasOffline}>
+        <Icon name="signal-wifi-off" size={25} color="rgb(255,255,255)" />
       </AddFicha>
     </Background>
   );

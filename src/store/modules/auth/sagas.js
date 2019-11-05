@@ -3,7 +3,7 @@ import { takeLatest, call, put, all } from "redux-saga/effects";
 
 import api from "~/services/api";
 
-import { signInSuccess, signUpSuccess, signFailure } from "./actions";
+import { signInSuccess, signUpSuccess, signFailure, setOffline, setOnline } from "./actions";
 
 export function* signIn({ payload }) {
   try {
@@ -50,17 +50,32 @@ export function* signUp({ payload }) {
 }
 
 export function setToken({ payload }) {
-  if (!payload) return;
+  try {if (!payload) return;
 
   const { token } = payload.auth;
 
   if (token) {
     api.defaults.headers.Authorization = `Bearer ${token}`;
   }
-}
+  } catch (err)
+ {
+   console.tron.log('error')
+ }}
 
 export function signOut() {
   // history.push('/');
+}
+
+export function* offline() {
+  yield put(setOffline())
+
+  Alert.alert('Modo Operação', 'Offline');
+}
+
+export function* online() {
+  yield put(setOnline())
+
+  Alert.alert('Modo Operação', 'Online');
 }
 
 export function* resetUp({ payload }) {
@@ -90,5 +105,7 @@ export default all([
   takeLatest("@auth/SIGN_IN_REQUEST", signIn),
   takeLatest("@auth/SIGN_UP_REQUEST", signUp),
   takeLatest("@auth/RESET_REQUEST", resetUp),
-  takeLatest("@auth/SIGN_OUT", signOut)
+  takeLatest("@auth/SIGN_OUT", signOut),
+  takeLatest("@auth/OFFLINE", offline),
+  takeLatest("@auth/ONLINE", online)
 ]);

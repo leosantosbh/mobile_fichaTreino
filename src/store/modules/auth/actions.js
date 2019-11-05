@@ -39,6 +39,18 @@ export function signFailure() {
   };
 }
 
+export function setOffline() {
+  return {
+    type: "@auth/OFFLINE"
+  };
+}
+
+export function setOnline() {
+  return {
+    type: "@auth/ONLINE"
+  };
+}
+
 export function signOut() {
   return {
     type: "@auth/SIGN_OUT"
